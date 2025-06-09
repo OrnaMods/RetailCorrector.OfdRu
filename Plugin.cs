@@ -108,7 +108,7 @@ namespace OfdRu
             receipt.CorrectionType = CorrType.ByYourself;
             receipt.Created = ToDateTime(node["DocDateTime"]!.GetValue<string>());
             receipt.FiscalSign = node["DecimalFiscalSign"]!.GetValue<string>();
-            receipt.RoundedSum = node["TotalSumm"]!.GetValue<uint>();
+            receipt.TotalSum = node["TotalSumm"]!.GetValue<uint>();
             receipt.Payment = ParsePayment(node);
             receipt.Items = new Position[items.Count];
             receipt.Operation = ToOperation(node["OperationType"]!.GetValue<string>());
