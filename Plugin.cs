@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text.Json.Nodes;
-using RetailCorrector.Plugin;
+using RetailCorrector.Plugins;
 using Payment = RetailCorrector.Payment;
 
 [assembly: Guid("5f45a5b3-b129-4346-bb55-219fbd2b4156")]
@@ -79,14 +79,14 @@ namespace OfdRu
 
         public override async Task<IEnumerable<Receipt>> Parse(CancellationToken token)
         {
-            OnParseStarted((int)(_dateTo.ToDateTime(TimeOnly.MinValue) - _dateFrom.ToDateTime(TimeOnly.MinValue)).TotalDays + 1);
+            InvokeParseStarted((int)(_dateTo.ToDateTime(TimeOnly.MinValue) - _dateFrom.ToDateTime(TimeOnly.MinValue)).TotalDays + 1);
             _pathUri = $"/api/integration/v2/inn/{_vatin}/kkt/{_deviceId}/receipts-info?AuthToken={Token}";
             var receipts = new List<Receipt>();
             for (var day = _dateFrom; day <= _dateTo; day = day.AddDays(1))
             {
                 token.ThrowIfCancellationRequested();
                 receipts.AddRange(await ParseByDay(day));
-                OnProgressUpdated((int)(day.ToDateTime(TimeOnly.MinValue) - _dateFrom.ToDateTime(TimeOnly.MinValue)).TotalDays + 1);
+                InvokeProgressUpdated((int)(day.ToDateTime(TimeOnly.MinValue) - _dateFrom.ToDateTime(TimeOnly.MinValue)).TotalDays + 1);
             }
             return receipts;
         }
