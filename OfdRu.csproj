@@ -9,9 +9,9 @@
 	  <Authors>ornaras</Authors>
 	  <Description>Парсер чеков с ОФД ООО "Петер-Сервис" (OfdRu)</Description>
   </PropertyGroup>
-
+	
   <ItemGroup>
-	<PackageReference Include="RetailCorrector.PluginAPI" Version="1.1.0"/>
+    <PackageReference Include="RetailCorrector.PluginAPI" Version="1.2.1" />
     <Using Include="RetailCorrector" />
   </ItemGroup>
     
