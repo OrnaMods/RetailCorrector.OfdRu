@@ -127,9 +127,30 @@ namespace OfdRu
             position.PayType = (PaymentType)node["CalculationMethod"]!.GetValue<int>();
             position.MeasureUnit = (MeasureUnit)int.Parse(node["ProductUnitOfMeasure"]?.GetValue<string>() ?? "-1");
             position.TaxRate = (TaxRate)node["NDS_Rate"]!.GetValue<int>();
+            position.Codes = ToPositionCode(node["ProductCode"]!);
             position.PosType = (PositionType)node["SubjectType"]!.GetValue<int>();
             return position;
         }
+
+        private static PositionCode ToPositionCode(JsonNode node) => new()
+        {
+            Unknown = node["Code_Undefined"]!.GetValue<string>(),
+            EAN8 = node["Code_EAN_8"]!.GetValue<string>(),
+            EAN13 = node["Code_EAN_13"]!.GetValue<string>(),
+            ITF14 = node["Code_ITF_14"]!.GetValue<string>(),
+            GS1_0 = node["Code_GS_1"]!.GetValue<string>(),
+            GS1_M = node["Code_GS_1M"]!.GetValue<string>(),
+            KMK = node["Code_KMK"]!.GetValue<string>(),
+            MI = node["Code_MI"]!.GetValue<string>(),
+            EGAIS2 = node["Code_EGAIS_2"]!.GetValue<string>(),
+            EGAIS3 = node["Code_EGAIS_3"]!.GetValue<string>(),
+            F1 = node["Code_F_1"]!.GetValue<string>(),
+            F2 = node["Code_F_2"]!.GetValue<string>(),
+            F3 = node["Code_F_3"]!.GetValue<string>(),
+            F4 = node["Code_F_4"]!.GetValue<string>(),
+            F5 = node["Code_F_5"]!.GetValue<string>(),
+            F6 = node["Code_F_6"]!.GetValue<string>(),
+        };
 
         private static uint ToQuantity(double raw) => (uint)Math.Round(raw * 1000);
 
