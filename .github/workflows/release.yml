@@ -1,0 +1,25 @@
+on: 
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    - name: Set version
+      run: sed -i "s/<\/PropertyGroup>/  <Version>$(echo $GITHUB_REF | grep -P "\d+\.\d+\.\d+" -o)<\/Version>\n  <\/PropertyGroup>/" RetailCorrector.PluginAPI.csproj
+    - name: Build a project
+      run: dotnet build      
+    - name: Upload Release Asset
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run:
+        gh release upload "$(echo $GITHUB_REF | grep -P "v\d+\.\d+\.\d+" -o)" "bin/Debug/net9.0/*.dll"
