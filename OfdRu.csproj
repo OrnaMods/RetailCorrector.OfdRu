@@ -10,7 +10,7 @@
   </PropertyGroup>
 	
   <ItemGroup>
-    <PackageReference Include="RetailCorrector.PluginAPI" Version="1.4.0" />
+    <PackageReference Include="RetailCorrector.PluginAPI" Version="1.4.2" />
     <Using Include="RetailCorrector" />
   </ItemGroup>
     
