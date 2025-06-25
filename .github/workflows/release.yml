@@ -15,7 +15,7 @@ jobs:
       with:
         dotnet-version: '9.0.x'
     - name: Set version
-      run: sed -i "s/<\/PropertyGroup>/  <Version>$(echo $GITHUB_REF | grep -P "\d+\.\d+\.\d+" -o)<\/Version>\n  <\/PropertyGroup>/" RetailCorrector.PluginAPI.csproj
+      run: sed -i "s/<\/PropertyGroup>/  <Version>$(echo $GITHUB_REF | grep -P "\d+\.\d+\.\d+" -o)<\/Version>\n  <\/PropertyGroup>/" OfdRu.csproj
     - name: Build a project
       run: dotnet build      
     - name: Upload Release Asset
