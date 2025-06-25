@@ -31,7 +31,7 @@ namespace OfdRu
             get => _dateTo;
             set
             {
-                if (value >= _dateFrom) 
+                if (value >= _dateFrom)
                     _dateTo = value;
                 else Notify(Constants.DateToError);
             }
@@ -42,7 +42,7 @@ namespace OfdRu
             get => _vatin ?? "";
             set
             {
-                if(VatinValidator.Valid(value)) _vatin = value;
+                if (VatinValidator.Valid(value)) _vatin = value;
                 else Notify(Constants.VatinError);
             }
         }
@@ -71,22 +71,24 @@ namespace OfdRu
         {
             http = new HttpClient
             {
-                BaseAddress= new Uri(Constants.BaseUri),
+                BaseAddress = new Uri(Constants.BaseUri),
                 Timeout = TimeSpan.FromSeconds(15),
             };
             return Task.FromResult(true);
         }
 
-        public override async Task Parse(CancellationToken token)
+        public override async Task<IEnumerable<Receipt>> Parse(CancellationToken token)
         {
             InvokeParseStarted((int)(_dateTo.ToDateTime(TimeOnly.MinValue) - _dateFrom.ToDateTime(TimeOnly.MinValue)).TotalDays + 1);
             _pathUri = $"/api/integration/v2/inn/{_vatin}/kkt/{_deviceId}/receipts-info?AuthToken={Token}";
+            var receipts = new List<Receipt>();
             for (var day = _dateFrom; day <= _dateTo; day = day.AddDays(1))
             {
                 token.ThrowIfCancellationRequested();
-                await ParseByDay(day);
+                receipts.AddRange(await ParseByDay(day));
                 InvokeProgressUpdated((int)(day.ToDateTime(TimeOnly.MinValue) - _dateFrom.ToDateTime(TimeOnly.MinValue)).TotalDays + 1);
             }
+            return receipts;
         }
 
         private static Payment ParsePayment(JsonNode node) => new()
@@ -163,33 +165,24 @@ namespace OfdRu
         private static DateTime ToDateTime(string text) =>
             DateTime.ParseExact(text, "yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture);
 
-        private async Task ParseByDay(DateOnly day, int numberTry = 1)
+        private async Task<Receipt[]> ParseByDay(DateOnly day, int numberTry = 1)
         {
-            await Task.Delay(numberTry * 1100);
             var dayText = day.ToString("yyyy'-'MM'-'dd");
             var uri = $"{_pathUri}&dateFrom={dayText}T00:00:00&dateTo={dayText}T23:59:59";
             var response = await http!.GetAsync(uri);
             if (!response.IsSuccessStatusCode)
             {
                 if (numberTry == Constants.CountTries)
-                    return;
-                await ParseByDay(day, numberTry + 1);
+                    return [];
+                return await ParseByDay(day, numberTry + 1);
             }
             var content = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(content)!;
-            try
-            {
-                var arr = json!["Data"]!.AsArray();
-                for (var i = 0; i < arr.Count; i++)
-                    InvokeAddedReceipt(ParseReceipt(arr[i]!));
-            }
-            catch (Exception e)
-            {
-                Log("Сервер выдал неожиданный ответ...", true, e);
-                if (numberTry == Constants.CountTries)
-                    return;
-                await ParseByDay(day, numberTry + 1);
-            }
+            var arr = json!["Data"]!.AsArray();
+            var receipts = new Receipt[arr.Count];
+            for (var i = 0; i < arr.Count; i++)
+                receipts[i] = ParseReceipt(arr[i]!);
+            return receipts;
         }
 
         public override Task OnUnload()
