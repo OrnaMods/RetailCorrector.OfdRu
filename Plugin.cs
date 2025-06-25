@@ -165,6 +165,7 @@ namespace OfdRu
 
         private async Task ParseByDay(DateOnly day, int numberTry = 1)
         {
+            await Task.Delay(numberTry * 1100);
             var dayText = day.ToString("yyyy'-'MM'-'dd");
             var uri = $"{_pathUri}&dateFrom={dayText}T00:00:00&dateTo={dayText}T23:59:59";
             var response = await http!.GetAsync(uri);
@@ -176,9 +177,19 @@ namespace OfdRu
             }
             var content = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(content)!;
-            var arr = json!["Data"]!.AsArray();
+            try
+            {
+                var arr = json!["Data"]!.AsArray();
                 for (var i = 0; i < arr.Count; i++)
                     InvokeAddedReceipt(ParseReceipt(arr[i]!));
+            }
+            catch (Exception e)
+            {
+                Log("Сервер выдал неожиданный ответ...", true, e);
+                if (numberTry == Constants.CountTries)
+                    return;
+                await ParseByDay(day, numberTry + 1);
+            }
         }
 
         public override Task OnUnload()
