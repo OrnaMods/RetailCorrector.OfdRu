@@ -165,6 +165,7 @@ namespace OfdRu
 
         private async Task ParseByDay(DateOnly day, int numberTry = 1)
         {
+            await Task.Delay(numberTry * 1100);
             var dayText = day.ToString("yyyy'-'MM'-'dd");
             var uri = $"{_pathUri}&dateFrom={dayText}T00:00:00&dateTo={dayText}T23:59:59";
             var response = await http!.GetAsync(uri);
