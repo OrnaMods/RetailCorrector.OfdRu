@@ -177,9 +177,19 @@ namespace OfdRu
             }
             var content = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(content)!;
-            var arr = json!["Data"]!.AsArray();
+            try
+            {
+                var arr = json!["Data"]!.AsArray();
                 for (var i = 0; i < arr.Count; i++)
                     InvokeAddedReceipt(ParseReceipt(arr[i]!));
+            }
+            catch (Exception e)
+            {
+                Log("Сервер выдал неожиданный ответ...", true, e);
+                if (numberTry == Constants.CountTries)
+                    return;
+                await ParseByDay(day, numberTry + 1);
+            }
         }
 
         public override Task OnUnload()
